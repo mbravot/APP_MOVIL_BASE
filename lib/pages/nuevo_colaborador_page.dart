@@ -15,7 +15,6 @@ class _NuevoColaboradorPageState extends State<NuevoColaboradorPage> {
   final TextEditingController dvController = TextEditingController();
   bool _guardando = false;
   String? idSucursal;
-  String? idSucursalContrato;
 
   @override
   void initState() {
@@ -27,7 +26,6 @@ class _NuevoColaboradorPageState extends State<NuevoColaboradorPage> {
     final id = await ApiService().getSucursalActiva();
     setState(() {
       idSucursal = id;
-      idSucursalContrato = id;
     });
   }
 
@@ -39,7 +37,7 @@ class _NuevoColaboradorPageState extends State<NuevoColaboradorPage> {
 
   void _guardarColaborador() async {
     if (!_formKey.currentState!.validate()) return;
-    if (idSucursal == null || idSucursalContrato == null) {
+    if (idSucursal == null) {
       _mostrarError('No se pudo obtener la sucursal activa.');
       return;
     }
@@ -50,7 +48,6 @@ class _NuevoColaboradorPageState extends State<NuevoColaboradorPage> {
         "apellido_paterno": apellidoPController.text.trim(),
         "apellido_materno": apellidoMController.text.trim().isEmpty ? null : apellidoMController.text.trim(),
         "id_sucursal": idSucursal,
-        "id_sucursalcontrato": idSucursalContrato,
         "id_estado": 1,
         // Los demás campos van null
         "rut": null,
