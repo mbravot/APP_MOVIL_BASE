@@ -5,28 +5,36 @@ import 'package:flutter/foundation.dart';
 
 // 🔧 Sistema de logging condicional
 void logDebug(String message) {
-  // Comentado para mejorar rendimiento
-  // print("🔍 $message");
+  if (kDebugMode) {
+    print("🔍 $message");
+  }
 }
 
 void logError(String message) {
-  // Solo mostrar errores críticos en producción
-  // if (kDebugMode) {
-  //   print("❌ $message");
-  // }
+  if (kDebugMode) {
+    print("❌ $message");
+  }
 }
 
 void logInfo(String message) {
-  // Comentado para mejorar rendimiento
-  // print("ℹ️ $message");
+  if (kDebugMode) {
+    print("ℹ️ $message");
+  }
+}
+
+void logEndpoint(String method, String endpoint) {
+  if (kDebugMode) {
+    print("🌐 [$method] $endpoint");
+  }
 }
 
 class AuthService {
-  final String baseUrl = 'https://apilhtarja-927498545444.us-central1.run.app/api';
-  //final String baseUrl = 'http://192.168.1.52:5000/api';
+  //final String baseUrl = 'https://apilhtarja-927498545444.us-central1.run.app/api';
+  final String baseUrl = 'http://192.168.1.43:5000/api';
 
   Future<void> login(String usuario, String clave) async {
     try {
+      logEndpoint("POST", "/auth/login");
       final Map<String, String> body = {
         "usuario": usuario,
         "clave": clave,
@@ -91,6 +99,7 @@ class AuthService {
       }
 
       // Intentando refresh token...
+      logEndpoint("POST", "/auth/refresh");
 
       final response = await http.post(
         Uri.parse("$baseUrl/auth/refresh"),

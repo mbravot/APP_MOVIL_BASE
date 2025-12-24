@@ -10,17 +10,29 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final prefs = await SharedPreferences.getInstance();
-  final String? token = prefs.getString('access_token');
   
-  Widget startPage = token != null ? HomePage() : LoginPage();
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final String? token = prefs.getString('access_token');
+    
+    Widget startPage = token != null ? HomePage() : LoginPage();
 
-  runApp(
-    ChangeNotifierProvider(
-      create: (_) => ThemeProvider(),
-      child: MyApp(startPage: startPage),
-    ),
-  );
+    runApp(
+      ChangeNotifierProvider(
+        create: (_) => ThemeProvider(),
+        child: MyApp(startPage: startPage),
+      ),
+    );
+  } catch (e) {
+    // Si hay error al inicializar, ir directo al login
+    print("Error al inicializar app: $e");
+    runApp(
+      ChangeNotifierProvider(
+        create: (_) => ThemeProvider(),
+        child: MyApp(startPage: LoginPage()),
+      ),
+    );
+  }
 }
 
 class MyApp extends StatelessWidget {

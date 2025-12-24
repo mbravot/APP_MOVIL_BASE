@@ -30,35 +30,49 @@ class _EditarUsuarioPageState extends State<EditarUsuarioPage> {
   final _usuarioController = TextEditingController();
   final _correoController = TextEditingController();
   final _claveController = TextEditingController();
+  final _nombreController = TextEditingController();
+  final _apellidoPaternoController = TextEditingController();
+  final _apellidoMaternoController = TextEditingController();
 
   List<Map<String, dynamic>> sucursales = [];
-  List<Map<String, dynamic>> colaboradores = [];
+  List<Map<String, dynamic>> roles = [];
+  List<Map<String, dynamic>> perfiles = [];
+  List<Map<String, dynamic>> estados = [];
 
   String? selectedSucursal;
-  String? selectedColaborador;
+  String? selectedRol;
+  String? selectedPerfil;
   String? selectedEstado;
-  List<int> sucursalesPermitidasSeleccionadas = [];
-  List<Map<String, dynamic>> aplicaciones = [];
-  List<int> aplicacionesPermitidasSeleccionadas = [];
 
   bool _guardando = false;
   bool _ocultarClave = true;
+  
+  // Variables faltantes para funcionalidad completa
+  List<Map<String, dynamic>> colaboradores = [];
+  List<Map<String, dynamic>> aplicaciones = [];
+  List<int> sucursalesPermitidasSeleccionadas = [];
+  List<int> aplicacionesPermitidasSeleccionadas = [];
   bool _mostrarSelectorColaborador = false;
+  String? selectedColaborador;
 
   @override
   void initState() {
     super.initState();
     _usuarioController.text = widget.usuario['usuario'] ?? '';
     _correoController.text = widget.usuario['correo'] ?? '';
+    _nombreController.text = widget.usuario['nombre'] ?? '';
+    _apellidoPaternoController.text = widget.usuario['apellido_paterno'] ?? '';
+    _apellidoMaternoController.text = widget.usuario['apellido_materno'] ?? '';
     selectedSucursal = widget.usuario['id_sucursalactiva']?.toString();
-    selectedColaborador = widget.usuario['id_colaborador']?.toString();
-    selectedEstado = widget.usuario['id_estado']?.toString() ?? '1';
-    _mostrarSelectorColaborador = selectedColaborador != null;
+    selectedRol = widget.usuario['id_rol']?.toString() ?? '3'; // Valor por defecto si no existe
+    selectedPerfil = widget.usuario['id_perfil']?.toString() ?? '1'; // Valor por defecto si no existe
+    selectedEstado = widget.usuario['id_estado']?.toString() ?? '1'; // Valor por defecto si no existe
     _cargarSucursales();
+    _cargarRoles();
+    _cargarPerfiles();
+    _cargarEstados();
     _cargarColaboradores();
-    _cargarSucursalesPermitidas();
     _cargarAplicaciones();
-    _cargarAplicacionesPermitidas();
   }
 
   Future<void> _cargarSucursales() async {
@@ -72,6 +86,39 @@ class _EditarUsuarioPageState extends State<EditarUsuarioPage> {
     }
   }
 
+  Future<void> _cargarRoles() async {
+    try {
+      final lista = await ApiService().getRoles();
+      if (mounted) {
+        setState(() => roles = List<Map<String, dynamic>>.from(lista));
+      }
+    } catch (e) {
+      logError('Error al cargar roles: ${e.toString()}');
+    }
+  }
+
+  Future<void> _cargarPerfiles() async {
+    try {
+      final lista = await ApiService().getPerfiles();
+      if (mounted) {
+        setState(() => perfiles = List<Map<String, dynamic>>.from(lista));
+      }
+    } catch (e) {
+      logError('Error al cargar perfiles: ${e.toString()}');
+    }
+  }
+
+  Future<void> _cargarEstados() async {
+    try {
+      final lista = await ApiService().getEstados();
+      if (mounted) {
+        setState(() => estados = List<Map<String, dynamic>>.from(lista));
+      }
+    } catch (e) {
+      logError('Error al cargar estados: ${e.toString()}');
+    }
+  }
+
   Future<void> _cargarColaboradores() async {
     try {
       final lista = await ApiService().getColaboradores();
@@ -80,6 +127,17 @@ class _EditarUsuarioPageState extends State<EditarUsuarioPage> {
       }
     } catch (e) {
       logError('Error al cargar colaboradores: ${e.toString()}');
+    }
+  }
+
+  Future<void> _cargarAplicaciones() async {
+    try {
+      final lista = await ApiService().getAplicaciones();
+      if (mounted) {
+        setState(() => aplicaciones = List<Map<String, dynamic>>.from(lista));
+      }
+    } catch (e) {
+      logError('Error al cargar aplicaciones: ${e.toString()}');
     }
   }
 
@@ -97,16 +155,6 @@ class _EditarUsuarioPageState extends State<EditarUsuarioPage> {
     }
   }
 
-  Future<void> _cargarAplicaciones() async {
-    try {
-      final lista = await ApiService().getAplicaciones();
-      if (mounted) {
-        setState(() => aplicaciones = lista);
-      }
-    } catch (e) {
-      logError('Error al cargar aplicaciones: ${e.toString()}');
-    }
-  }
 
   Future<void> _cargarAplicacionesPermitidas() async {
     try {
@@ -151,8 +199,12 @@ class _EditarUsuarioPageState extends State<EditarUsuarioPage> {
         "usuario": _usuarioController.text.trim(),
         "correo": _correoController.text.trim(),
         "id_sucursalactiva": selectedSucursal,
-        "id_colaborador": _mostrarSelectorColaborador ? selectedColaborador : null,
-        "id_estado": int.parse(selectedEstado ?? "1"),
+        "nombre": _nombreController.text.trim().isNotEmpty ? _nombreController.text.trim() : null,
+        "apellido_paterno": _apellidoPaternoController.text.trim().isNotEmpty ? _apellidoPaternoController.text.trim() : null,
+        "apellido_materno": _apellidoMaternoController.text.trim().isNotEmpty ? _apellidoMaternoController.text.trim() : null,
+        "id_rol": selectedRol != null ? int.parse(selectedRol!) : 3, // Valor por defecto: rol 3
+        "id_perfil": selectedPerfil != null ? int.parse(selectedPerfil!) : 1, // Valor por defecto: perfil 1
+        "id_estado": selectedEstado != null ? int.parse(selectedEstado!) : 1, // Valor por defecto: estado 1
       };
 
       // Solo incluir la clave si se ha modificado
@@ -324,6 +376,198 @@ class _EditarUsuarioPageState extends State<EditarUsuarioPage> {
                           ),
                         ),
                         SizedBox(height: 16),
+                        // Campo de nombre
+                        TextFormField(
+                          controller: _nombreController,
+                          decoration: InputDecoration(
+                            labelText: "Nombre",
+                            prefixIcon: Icon(Icons.badge, color: primaryColor),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: primaryColor),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        // Campo de apellido paterno
+                        TextFormField(
+                          controller: _apellidoPaternoController,
+                          decoration: InputDecoration(
+                            labelText: "Apellido Paterno",
+                            prefixIcon: Icon(Icons.badge, color: primaryColor),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: primaryColor),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        // Campo de apellido materno
+                        TextFormField(
+                          controller: _apellidoMaternoController,
+                          decoration: InputDecoration(
+                            labelText: "Apellido Materno",
+                            prefixIcon: Icon(Icons.badge, color: primaryColor),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: primaryColor),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        // Selector de rol - OCULTO (valor por defecto: rol 3)
+                        // DropdownSearch<String>(
+                        //   popupProps: PopupProps.menu(
+                        //     fit: FlexFit.loose,
+                        //     menuProps: MenuProps(
+                        //       backgroundColor: Colors.white,
+                        //       elevation: 2,
+                        //     ),
+                        //     showSelectedItems: true,
+                        //   ),
+                        //   items: roles.map((r) => r['nombre'].toString()).toList(),
+                        //   dropdownDecoratorProps: DropDownDecoratorProps(
+                        //     dropdownSearchDecoration: InputDecoration(
+                        //       labelText: "Rol",
+                        //       prefixIcon: Icon(Icons.admin_panel_settings, color: primaryColor),
+                        //       border: OutlineInputBorder(
+                        //         borderRadius: BorderRadius.circular(12),
+                        //       ),
+                        //       enabledBorder: OutlineInputBorder(
+                        //         borderRadius: BorderRadius.circular(12),
+                        //         borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
+                        //       ),
+                        //       focusedBorder: OutlineInputBorder(
+                        //         borderRadius: BorderRadius.circular(12),
+                        //         borderSide: BorderSide(color: primaryColor),
+                        //       ),
+                        //     ),
+                        //   ),
+                        //   onChanged: (String? value) {
+                        //     if (value != null) {
+                        //       final rol = roles.firstWhere((r) => r['nombre'] == value);
+                        //       setState(() => selectedRol = rol['id'].toString());
+                        //     } else {
+                        //       setState(() => selectedRol = null);
+                        //     }
+                        //   },
+                        //   selectedItem: selectedRol != null
+                        //     ? roles.firstWhere(
+                        //         (r) => r['id'].toString() == selectedRol,
+                        //         orElse: () => {'nombre': ''},
+                        //       )['nombre']
+                        //     : null,
+                        // ),
+                        SizedBox(height: 20),
+                        // Selector de perfil - OCULTO (valor por defecto: perfil 1 - LECTOR)
+                        // DropdownSearch<String>(
+                        //   popupProps: PopupProps.menu(
+                        //     fit: FlexFit.loose,
+                        //     menuProps: MenuProps(
+                        //       backgroundColor: Colors.white,
+                        //       elevation: 2,
+                        //     ),
+                        //     showSelectedItems: true,
+                        //   ),
+                        //   items: perfiles.map((p) => p['nombre'].toString()).toList(),
+                        //   dropdownDecoratorProps: DropDownDecoratorProps(
+                        //     dropdownSearchDecoration: InputDecoration(
+                        //       labelText: "Perfil",
+                        //       prefixIcon: Icon(Icons.person_pin, color: primaryColor),
+                        //       border: OutlineInputBorder(
+                        //         borderRadius: BorderRadius.circular(12),
+                        //       ),
+                        //       enabledBorder: OutlineInputBorder(
+                        //         borderRadius: BorderRadius.circular(12),
+                        //         borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
+                        //       ),
+                        //       focusedBorder: OutlineInputBorder(
+                        //         borderRadius: BorderRadius.circular(12),
+                        //         borderSide: BorderSide(color: primaryColor),
+                        //       ),
+                        //     ),
+                        //   ),
+                        //   onChanged: (String? value) {
+                        //     if (value != null) {
+                        //       final perfil = perfiles.firstWhere((p) => p['nombre'] == value);
+                        //       setState(() => selectedPerfil = perfil['id'].toString());
+                        //     } else {
+                        //       setState(() => selectedPerfil = null);
+                        //     }
+                        //   },
+                        //   selectedItem: selectedPerfil != null
+                        //     ? perfiles.firstWhere(
+                        //         (p) => p['id'].toString() == selectedPerfil,
+                        //         orElse: () => {'nombre': ''},
+                        //       )['nombre']
+                        //     : null,
+                        // ),
+                        SizedBox(height: 20),
+                        // Selector de estado - OCULTO (valor por defecto: estado 1)
+                        // DropdownSearch<String>(
+                        //   popupProps: PopupProps.menu(
+                        //     fit: FlexFit.loose,
+                        //     menuProps: MenuProps(
+                        //       backgroundColor: Colors.white,
+                        //       elevation: 2,
+                        //     ),
+                        //     showSelectedItems: true,
+                        //   ),
+                        //   items: estados.map((e) => e['nombre'].toString()).toList(),
+                        //   dropdownDecoratorProps: DropDownDecoratorProps(
+                        //     dropdownSearchDecoration: InputDecoration(
+                        //       labelText: "Estado",
+                        //       prefixIcon: Icon(Icons.check_circle, color: primaryColor),
+                        //       border: OutlineInputBorder(
+                        //         borderRadius: BorderRadius.circular(12),
+                        //       ),
+                        //       enabledBorder: OutlineInputBorder(
+                        //         borderRadius: BorderRadius.circular(12),
+                        //         borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
+                        //       ),
+                        //       focusedBorder: OutlineInputBorder(
+                        //         borderRadius: BorderRadius.circular(12),
+                        //         borderSide: BorderSide(color: primaryColor),
+                        //       ),
+                        //     ),
+                        //   ),
+                        //   onChanged: (String? value) {
+                        //     if (value != null) {
+                        //       final estado = estados.firstWhere((e) => e['nombre'] == value);
+                        //       setState(() => selectedEstado = estado['id'].toString());
+                        //     } else {
+                        //       setState(() => selectedEstado = null);
+                        //     }
+                        //   },
+                        //   selectedItem: selectedEstado != null
+                        //     ? estados.firstWhere(
+                        //         (e) => e['id'].toString() == selectedEstado,
+                        //         orElse: () => {'nombre': ''},
+                        //       )['nombre']
+                        //     : null,
+                        // ),
+                        SizedBox(height: 20),
                         // Selector de sucursal
                           DropdownSearch<String>(
                             popupProps: PopupProps.menu(

@@ -27,25 +27,41 @@ class _NuevoUsuarioPageState extends State<NuevoUsuarioPage> {
   final usuarioController = TextEditingController();
   final correoController = TextEditingController();
   final claveController = TextEditingController();
+  final nombreController = TextEditingController();
+  final apellidoPaternoController = TextEditingController();
+  final apellidoMaternoController = TextEditingController();
   final Color primaryColor = Colors.green;
 
   List<Map<String, dynamic>> sucursales = [];
+  List<Map<String, dynamic>> roles = [];
+  List<Map<String, dynamic>> perfiles = [];
+  List<Map<String, dynamic>> estados = [];
+  
   String? selectedSucursal;
-  String? selectedColaborador;
-  List<Map<String, dynamic>> colaboradores = [];
-  List<int> sucursalesPermitidasSeleccionadas = [];
-  List<Map<String, dynamic>> aplicaciones = [];
-  List<int> aplicacionesPermitidasSeleccionadas = [];
+  String? selectedRol;
+  String? selectedPerfil;
+  String? selectedEstado;
   
   bool _guardando = false;
   bool _ocultarClave = true;
-  bool _mostrarSelectorColaborador = false;
+  
+  // Variables para funcionalidad de sucursales y aplicaciones
+  List<Map<String, dynamic>> aplicaciones = [];
+  List<int> sucursalesPermitidasSeleccionadas = [];
+  List<int> aplicacionesPermitidasSeleccionadas = [];
 
   @override
   void initState() {
     super.initState();
+    // Establecer valores por defecto según cambios del backend
+    selectedRol = '3'; // Rol por defecto (usuario común)
+    selectedPerfil = '1'; // Perfil por defecto
+    selectedEstado = '1'; // Estado por defecto (activo)
+    
     _cargarSucursales();
-    _cargarColaboradores();
+    _cargarRoles();
+    _cargarPerfiles();
+    _cargarEstados();
     _cargarAplicaciones();
   }
 
@@ -58,19 +74,46 @@ class _NuevoUsuarioPageState extends State<NuevoUsuarioPage> {
     }
   }
 
-  Future<void> _cargarColaboradores() async {
+  Future<void> _cargarRoles() async {
     try {
-      final lista = await ApiService().getColaboradores();
-      setState(() => colaboradores = List<Map<String, dynamic>>.from(lista));
+      final lista = await ApiService().getRoles();
+      if (mounted) {
+        setState(() => roles = List<Map<String, dynamic>>.from(lista));
+      }
     } catch (e) {
-      _mostrarError('Error al cargar colaboradores: ${e.toString()}');
+      if (mounted) {
+        _mostrarError('Error al cargar roles: ${e.toString()}');
+      }
     }
   }
+
+  Future<void> _cargarPerfiles() async {
+    try {
+      final lista = await ApiService().getPerfiles();
+      setState(() => perfiles = List<Map<String, dynamic>>.from(lista));
+    } catch (e) {
+      _mostrarError('Error al cargar perfiles: ${e.toString()}');
+    }
+  }
+
+  Future<void> _cargarEstados() async {
+    try {
+      final lista = await ApiService().getEstados();
+      if (mounted) {
+        setState(() => estados = List<Map<String, dynamic>>.from(lista));
+      }
+    } catch (e) {
+      if (mounted) {
+        _mostrarError('Error al cargar estados: ${e.toString()}');
+      }
+    }
+  }
+
 
   Future<void> _cargarAplicaciones() async {
     try {
       final lista = await ApiService().getAplicaciones();
-      setState(() => aplicaciones = lista);
+      setState(() => aplicaciones = List<Map<String, dynamic>>.from(lista));
     } catch (e) {
       _mostrarError('Error al cargar aplicaciones: ${e.toString()}');
     }
@@ -106,7 +149,12 @@ class _NuevoUsuarioPageState extends State<NuevoUsuarioPage> {
         correo: correoController.text.trim(),
         clave: claveController.text,
         idSucursalActiva: int.parse(selectedSucursal!),
-        idColaborador: selectedColaborador,
+        nombre: nombreController.text.trim().isNotEmpty ? nombreController.text.trim() : null,
+        apellidoPaterno: apellidoPaternoController.text.trim().isNotEmpty ? apellidoPaternoController.text.trim() : null,
+        apellidoMaterno: apellidoMaternoController.text.trim().isNotEmpty ? apellidoMaternoController.text.trim() : null,
+        idRol: selectedRol != null ? int.parse(selectedRol!) : 3, // Valor por defecto: rol 3
+        idPerfil: selectedPerfil != null ? int.parse(selectedPerfil!) : 1, // Valor por defecto: perfil 1
+        idEstado: selectedEstado != null ? int.parse(selectedEstado!) : 1, // Valor por defecto: estado 1
       );
 
       if (usuarioId != null) {
@@ -273,6 +321,66 @@ class _NuevoUsuarioPageState extends State<NuevoUsuarioPage> {
                             },
                           ),
                           SizedBox(height: 20),
+                  // Campo de nombre
+                  TextFormField(
+                    controller: nombreController,
+                    decoration: InputDecoration(
+                      labelText: "Nombre",
+                      prefixIcon: Icon(Icons.badge, color: primaryColor),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: primaryColor),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  // Campo de apellido paterno
+                  TextFormField(
+                    controller: apellidoPaternoController,
+                    decoration: InputDecoration(
+                      labelText: "Apellido Paterno",
+                      prefixIcon: Icon(Icons.badge, color: primaryColor),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: primaryColor),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  // Campo de apellido materno
+                  TextFormField(
+                    controller: apellidoMaternoController,
+                    decoration: InputDecoration(
+                      labelText: "Apellido Materno",
+                      prefixIcon: Icon(Icons.badge, color: primaryColor),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: primaryColor),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
                   // Selector de sucursal
                           DropdownSearch<String>(
                             popupProps: PopupProps.menu(
@@ -321,68 +429,124 @@ class _NuevoUsuarioPageState extends State<NuevoUsuarioPage> {
                         value == null ? 'Por favor seleccione una sucursal' : null,
                           ),
                           SizedBox(height: 20),
-                  // Switch para mostrar/ocultar selector de colaborador
-                  SwitchListTile(
-                    title: Text("¿Asignar a un colaborador?"),
-                    value: _mostrarSelectorColaborador,
-                    onChanged: (bool value) {
-                      setState(() {
-                        _mostrarSelectorColaborador = value;
-                        if (!value) {
-                          selectedColaborador = null;
-                        }
-                      });
-                    },
-                    activeColor: primaryColor,
-                  ),
-                  if (_mostrarSelectorColaborador) ...[
-                    SizedBox(height: 20),
-                    // Selector de colaborador
-                          DropdownSearch<String>(
-                            popupProps: PopupProps.menu(
-                              fit: FlexFit.loose,
-                              menuProps: MenuProps(
-                                backgroundColor: Colors.white,
-                                elevation: 2,
-                              ),
-                              showSelectedItems: true,
-                            ),
-                      items: colaboradores.map((c) => c['nombre'].toString()).toList(),
-                            dropdownDecoratorProps: DropDownDecoratorProps(
-                              dropdownSearchDecoration: InputDecoration(
-                          labelText: "Colaborador",
-                          prefixIcon: Icon(Icons.person_outline, color: primaryColor),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(color: primaryColor),
-                                ),
-                              ),
-                            ),
-                            onChanged: (String? value) {
-                              if (value != null) {
-                          final colaborador = colaboradores.firstWhere(
-                            (c) => c['nombre'] == value,
-                                  orElse: () => {'id': null},
-                                );
-                          setState(() => selectedColaborador = colaborador['id']?.toString());
-                              }
-                            },
-                      selectedItem: selectedColaborador != null
-                          ? colaboradores
-                                    .firstWhere(
-                                (c) => c['id'].toString() == selectedColaborador,
-                                      orElse: () => {'nombre': ''},
-                                    )['nombre']
-                                : null,
-                    ),
-                  ],
+                  // Selector de rol - OCULTO (valor por defecto: rol 3)
+                  // DropdownSearch<String>(
+                  //   popupProps: PopupProps.menu(
+                  //     fit: FlexFit.loose,
+                  //     menuProps: MenuProps(
+                  //       backgroundColor: Colors.white,
+                  //       elevation: 2,
+                  //     ),
+                  //     showSelectedItems: true,
+                  //   ),
+                  //   items: roles.map((r) => r['nombre'].toString()).toList(),
+                  //   dropdownDecoratorProps: DropDownDecoratorProps(
+                  //     dropdownSearchDecoration: InputDecoration(
+                  //       labelText: "Rol",
+                  //       prefixIcon: Icon(Icons.admin_panel_settings, color: primaryColor),
+                  //       border: OutlineInputBorder(
+                  //         borderRadius: BorderRadius.circular(12),
+                  //       ),
+                  //       enabledBorder: OutlineInputBorder(
+                  //         borderRadius: BorderRadius.circular(12),
+                  //         borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
+                  //       ),
+                  //       focusedBorder: OutlineInputBorder(
+                  //         borderRadius: BorderRadius.circular(12),
+                  //         borderSide: BorderSide(color: primaryColor),
+                  //       ),
+                  //     ),
+                  //   ),
+                  //   onChanged: (String? value) {
+                  //     if (value != null) {
+                  //       final rol = roles.firstWhere((r) => r['nombre'] == value);
+                  //       selectedRol = rol['id'].toString();
+                  //     } else {
+                  //       selectedRol = null;
+                  //     }
+                  //   },
+                  //   // No es obligatorio, tiene valor por defecto
+                  // ),
+                  SizedBox(height: 20),
+                  // Selector de perfil - OCULTO (valor por defecto: perfil 1 - LECTOR)
+                  // DropdownSearch<String>(
+                  //   popupProps: PopupProps.menu(
+                  //     fit: FlexFit.loose,
+                  //     menuProps: MenuProps(
+                  //       backgroundColor: Colors.white,
+                  //       elevation: 2,
+                  //     ),
+                  //     showSelectedItems: true,
+                  //   ),
+                  //   items: perfiles.map((p) => p['nombre'].toString()).toList(),
+                  //   dropdownDecoratorProps: DropDownDecoratorProps(
+                  //     dropdownSearchDecoration: InputDecoration(
+                  //       labelText: "Perfil",
+                  //       prefixIcon: Icon(Icons.person_pin, color: primaryColor),
+                  //       border: OutlineInputBorder(
+                  //         borderRadius: BorderRadius.circular(12),
+                  //       ),
+                  //       enabledBorder: OutlineInputBorder(
+                  //         borderRadius: BorderRadius.circular(12),
+                  //         borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
+                  //       ),
+                  //       focusedBorder: OutlineInputBorder(
+                  //         borderRadius: BorderRadius.circular(12),
+                  //         borderSide: BorderSide(color: primaryColor),
+                  //       ),
+                  //     ),
+                  //   ),
+                  //   onChanged: (String? value) {
+                  //     if (value != null) {
+                  //       final perfil = perfiles.firstWhere((p) => p['nombre'] == value);
+                  //       selectedPerfil = perfil['id'].toString();
+                  //     } else {
+                  //       selectedPerfil = null;
+                  //     }
+                  //   },
+                  //   // No es obligatorio, tiene valor por defecto
+                  // ),
+                  SizedBox(height: 20),
+                  // Selector de estado - OCULTO (valor por defecto: estado 1)
+                  // DropdownSearch<String>(
+                  //   popupProps: PopupProps.menu(
+                  //     fit: FlexFit.loose,
+                  //     menuProps: MenuProps(
+                  //       backgroundColor: Colors.white,
+                  //       elevation: 2,
+                  //     ),
+                  //     showSelectedItems: true,
+                  //   ),
+                  //   items: estados.map((e) => e['nombre'].toString()).toList(),
+                  //   dropdownDecoratorProps: DropDownDecoratorProps(
+                  //     dropdownSearchDecoration: InputDecoration(
+                  //       labelText: "Estado",
+                  //       prefixIcon: Icon(Icons.check_circle, color: primaryColor),
+                  //       border: OutlineInputBorder(
+                  //         borderRadius: BorderRadius.circular(12),
+                  //       ),
+                  //       enabledBorder: OutlineInputBorder(
+                  //         borderRadius: BorderRadius.circular(12),
+                  //         borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
+                  //       ),
+                  //       focusedBorder: OutlineInputBorder(
+                  //         borderRadius: BorderRadius.circular(12),
+                  //         borderSide: BorderSide(color: primaryColor),
+                  //       ),
+                  //     ),
+                  //   ),
+                  //   onChanged: (String? value) {
+                  //     if (value != null) {
+                  //       final estado = estados.firstWhere((e) => e['nombre'] == value);
+                  //       selectedEstado = estado['id'].toString();
+                  //     } else {
+                  //       selectedEstado = null;
+                  //     }
+                  //   },
+                  //   // No es obligatorio, tiene valor por defecto
+                  // ),
+                  SizedBox(height: 20),
+                  // Funcionalidad de colaborador eliminada
                   SizedBox(height: 30),
                   
                   // Sección de Sucursales Permitidas

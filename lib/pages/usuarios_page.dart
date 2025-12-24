@@ -130,19 +130,33 @@ class _UsuariosPageState extends State<UsuariosPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Nombre de usuario y estado
+            // Nombre completo y estado
             Row(
               children: [
                 Icon(Icons.person, color: primaryColor),
                 SizedBox(width: 8),
                 Expanded(
-                  child: Text(
-                    usuario['nombre'] ?? usuario['usuario'] ?? 'Sin nombre',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: textColor,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _getNombreCompleto(usuario),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: textColor,
+                        ),
+                      ),
+                      if (usuario['usuario'] != null)
+                        Text(
+                          '@${usuario['usuario']}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: textColor.withOpacity(0.6),
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 Container(
@@ -192,6 +206,22 @@ class _UsuariosPageState extends State<UsuariosPage> {
               ],
             ),
             SizedBox(height: 8),
+            // Rol y Perfil
+            if (usuario['id_rol'] != null || usuario['id_perfil'] != null)
+              Row(
+                children: [
+                  Icon(Icons.admin_panel_settings, color: Colors.purple, size: 20),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _getRolYPerfil(usuario),
+                      style: TextStyle(fontSize: 14, color: textColor.withOpacity(0.7)),
+                    ),
+                  ),
+                ],
+              ),
+            if (usuario['id_rol'] != null || usuario['id_perfil'] != null)
+              SizedBox(height: 8),
             // Sucursal asignada
             Row(
               children: [
@@ -367,5 +397,37 @@ class _UsuariosPageState extends State<UsuariosPage> {
         backgroundColor: primaryColor,
       ),
     );
+  }
+
+  // Método auxiliar para obtener el nombre completo
+  String _getNombreCompleto(dynamic usuario) {
+    String nombre = usuario['nombre'] ?? '';
+    String apellidoPaterno = usuario['apellido_paterno'] ?? '';
+    String apellidoMaterno = usuario['apellido_materno'] ?? '';
+    
+    if (nombre.isEmpty && apellidoPaterno.isEmpty && apellidoMaterno.isEmpty) {
+      return usuario['usuario'] ?? 'Sin nombre';
+    }
+    
+    List<String> partes = [];
+    if (nombre.isNotEmpty) partes.add(nombre);
+    if (apellidoPaterno.isNotEmpty) partes.add(apellidoPaterno);
+    if (apellidoMaterno.isNotEmpty) partes.add(apellidoMaterno);
+    
+    return partes.join(' ');
+  }
+
+  // Método auxiliar para obtener rol y perfil
+  String _getRolYPerfil(dynamic usuario) {
+    List<String> info = [];
+    
+    if (usuario['id_rol'] != null) {
+      info.add('Rol: ${usuario['id_rol']}');
+    }
+    if (usuario['id_perfil'] != null) {
+      info.add('Perfil: ${usuario['id_perfil']}');
+    }
+    
+    return info.isEmpty ? 'Sin rol/perfil asignado' : info.join(' | ');
   }
 }

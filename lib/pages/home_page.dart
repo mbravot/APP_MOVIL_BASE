@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
-import 'actividades_page.dart';
-import 'rendimientos_page.dart';
 import 'contratistas_page.dart';
 import 'trabajadores_page.dart';
 import 'colaboradores_page.dart';
-import 'permisos_page.dart';
-import 'indicadores_page.dart';
-import 'horas_trabajadas_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'login_page.dart';
 import 'cambiar_clave_page.dart';
@@ -19,7 +14,6 @@ import '../providers/theme_provider.dart';
 import 'usuarios_page.dart';
 import 'info_page.dart';
 import '../widgets/token_checker.dart';
-import 'actividades_multiples_page.dart';
 
 // 🔧 Sistema de logging condicional
 void logDebug(String message) {
@@ -337,10 +331,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               children: [
                 Expanded(
                   child: _selectedIndex == 0
-                      ? ActividadesPage(
+                      ? _ActividadesPage(
                           key: _actividadesKey,
                         )
-                      : IndicadoresPage(
+                      : _IndicadoresPage(
                           key: _indicadoresKey,
                         ),
                 ),
@@ -364,7 +358,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   Widget _buildDrawer() {
     return Drawer(
-      child: FutureBuilder<SharedPreferences>(
+      child: Container(
+        color: Colors.green, // Fondo verde para toda la altura del drawer
+        child: SafeArea(
+          child: FutureBuilder<SharedPreferences>(
         future: SharedPreferences.getInstance(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
@@ -378,20 +375,18 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           final prefs = snapshot.data!;
           final esAdmin = prefs.getString('id_perfil') == '3';
 
-          return Container(
-            color: Colors.white,
-            child: Column(
-              children: [
-                _buildDrawerHeader(),
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(30),
-                        topRight: Radius.circular(30),
-                      ),
+          return Column(
+            children: [
+              _buildDrawerHeader(),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30),
                     ),
+                  ),
                     child: ListView(
                       padding: EdgeInsets.zero,
                       children: [
@@ -404,18 +399,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => UsuariosPage()),
-                            );
-                          },
-                          color: Colors.green,
-                        ),
-                        _buildDrawerItem(
-                          icon: Icons.assignment_add,
-                          title: "Actividades Múltiples",
-                          onTap: () {
-                            Navigator.pop(context);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => ActividadesMultiplesPage()),
                             );
                           },
                           color: Colors.green,
@@ -452,30 +435,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => ColaboradoresPage()),
-                            );
-                          },
-                          color: Colors.green,
-                        ),
-                        _buildDrawerItem(
-                          icon: Icons.assignment_turned_in,
-                          title: "Permisos",
-                          onTap: () {
-                            Navigator.pop(context);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => PermisosPage()),
-                            );
-                          },
-                          color: Colors.green,
-                        ),
-                        _buildDrawerItem(
-                          icon: Icons.access_time,
-                          title: "Horas Trabajadas",
-                          onTap: () {
-                            Navigator.pop(context);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => HorasTrabajadasPage()),
                             );
                           },
                           color: Colors.green,
@@ -536,9 +495,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   ),
                 ),
               ],
-            ),
-          );
+            );
         },
+          ),
+        ),
       ),
     );
   }
@@ -696,6 +656,60 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           BottomNavigationBarItem(
             icon: Icon(Icons.analytics),
             label: 'Indicadores',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Widget placeholder para Actividades
+class _ActividadesPage extends StatelessWidget {
+  const _ActividadesPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.assignment, size: 64, color: Colors.grey),
+          SizedBox(height: 16),
+          Text(
+            'Actividades',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.grey),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Esta funcionalidad estará disponible próximamente',
+            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Widget placeholder para Indicadores
+class _IndicadoresPage extends StatelessWidget {
+  const _IndicadoresPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.analytics, size: 64, color: Colors.grey),
+          SizedBox(height: 16),
+          Text(
+            'Indicadores',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.grey),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Esta funcionalidad estará disponible próximamente',
+            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
           ),
         ],
       ),

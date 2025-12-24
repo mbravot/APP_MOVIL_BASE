@@ -1,4 +1,4 @@
-package com.example.app_lh_tarja
+package cl.lahornilla.tarja
 
 import io.flutter.embedding.android.FlutterActivity
 
